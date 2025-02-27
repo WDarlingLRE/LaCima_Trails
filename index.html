@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>My Neighborhood Trails</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha512-odntB9ra8z4nuPS0Z0y2ZsLNOyZ57clfcNAnSQNGCzEgO2Ab93hjkmnCmb2FYi8sIp9p9DDIdnSpsvEVR9UQ=="
+    crossorigin=""
+  />
+
+  <style>
+    /* Make the map take up the full window. Adjust as needed. */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha512-SKM34mqC4jF6Nv3Z1nEkf0bn8RrhYZeofYuTyBW3qnkIv0H4QsBqSXnuoB9sIvxYP8H8p/vw5SxbYDizDpnC3g=="
+    crossorigin=""
+  ></script>
+
+  <!-- We'll load the GeoJSON file and map it. -->
+  <script>
+    // Initialize map
+    const map = L.map('map').setView([40, -95], 4); 
+    // Adjust latitude/longitude and zoom to your neighborhood
+    
+    // Add tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Fetch your trails GeoJSON and add to map
+    fetch('trails.geojson')
+      .then(response => response.json())
+      .then(geojsonData => {
+        const trailsLayer = L.geoJSON(geojsonData, {
+          style: {
+            color: 'blue',
+            weight: 4,
+            opacity: 0.8
+          }
+        }).addTo(map);
+
+        // Zoom the map to fit the trails
+        map.fitBounds(trailsLayer.getBounds());
+      })
+      .catch(err => console.error('Error loading GeoJSON:', err));
+  </script>
+</body>
+</html>
