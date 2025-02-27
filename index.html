@@ -24,30 +24,40 @@
 
   <!-- We'll load the GeoJSON file and map it. -->
   <script>
-    // Initialize map
-    const map = L.map('map').setView([40, -95], 4); 
-    // Adjust latitude/longitude and zoom to your neighborhood
-    
-    // Add tile layer (OpenStreetMap)
+    // Initialize the map centered in the approximate area of your trails.
+    const map = L.map('map').setView([29.89, -98.00], 14);
+
+    // Add OpenStreetMap tile layer.
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Fetch your trails GeoJSON and add to map
+    // Fetch the GeoJSON file (ensure trails.geojson is in the same directory)
     fetch('trails.geojson')
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+      })
       .then(geojsonData => {
-        const trailsLayer = L.geoJSON(geojsonData, {
-          style: {
-            color: 'blue',
-            weight: 4,
-            opacity: 0.8
+        // Create a GeoJSON layer with custom styling:
+        const geojsonLayer = L.geoJSON(geojsonData, {
+          style: function(feature) {
+            // Style LineString features.
+            if (feature.geometry.type === "LineString") {
+              return { color: 'blue', weight: 4, opacity: 0.8 };
+            }
+          },
+          pointToLayer: function(feature, latlng) {
+            // Render Point features as markers.
+            return L.marker(latlng);
           }
         }).addTo(map);
 
-        // Zoom the map to fit the trails
-        map.fitBounds(trailsLayer.getBounds());
+        // Fit the map to the bounds of the GeoJSON layer.
+        map.fitBounds(geojsonLayer.getBounds());
       })
       .catch(err => console.error('Error loading GeoJSON:', err));
   </script>
